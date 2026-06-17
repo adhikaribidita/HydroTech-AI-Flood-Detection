@@ -48,3 +48,4 @@ Thumbs.db
 frontend/.env.local
 frontend/.env.*.local
 # .env and .env.production are tracked as templates (no real secrets)
+.vercel
