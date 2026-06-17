@@ -1,0 +1,16 @@
+fastapi
+uvicorn[standard]
+torch
+torchvision
+torchmetrics
+opencv-python
+numpy
+pillow
+segmentation-models-pytorch
+timm
+python-multipart
+reportlab
+
+# Optional: DenseCRF for boundary edge refinement (enables CRF post-processing)
+# Install separately if available for your platform:
+#   pip install pydensecrf

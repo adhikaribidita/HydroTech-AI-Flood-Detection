@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+
+# Node
+node_modules/
+dist/
+.next/
+
+# VS Code
+.vscode/
+
+# Cache
+cache/
+.gradio/
+
+# Dataset
+dataset/
+
+# Model files
+*.pth
+*.pt
+*.onnx
+saved_model/
+
+# Outputs
+outputs/
+output/
+plots/
+test_results/
+
+# Temporary
+*.log
+*.tmp
+tempCodeRunnerFile.py
+
+# OS
+.DS_Store
+Thumbs.db
