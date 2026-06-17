@@ -1,71 +1,114 @@
-# HydroTech Flood Detection
+# HydroTech — AI-Powered Environmental Inundation & Flood Analytics
 
-This repository contains a premium AI-powered flood detection platform built with:
+HydroTech is a cinematic, enterprise-grade flood detection platform that leverages satellite imagery and deep learning to perform real-time water inundation segmentation. 
 
-- **Frontend:** Next.js, React, TypeScript, Tailwind CSS, Three.js, Framer Motion, GSAP
-- **Backend:** FastAPI, PyTorch, U-Net++, OpenCV
-- **AI Model:** `best_model.pth` (U-Net++ EfficientNet-B3)
+* **Live Demo (Frontend):** [https://hydro-tech-ai-flood-detection.vercel.app/](https://hydro-tech-ai-flood-detection.vercel.app/)
+* **Inference API (Backend):** [https://hydrotech-ai-flood-detection-1hydrotech.onrender.com/health](https://hydrotech-ai-flood-detection-1hydrotech.onrender.com/health)
 
-## Folder structure
+---
 
-- `backend/` — FastAPI service, model loading, prediction, PDF report generation
-- `frontend/` — Next.js app with a cinematic landing page and enterprise dashboard
+## 🌟 Key Features
 
-## Local setup
+1. **Cinematic Landing Page:** Includes an interactive, high-fidelity 3D Earth visualization rendered in real-time with WebGL using React Three Fiber, customizable cloud layers, realistic shaders, and post-processing glows.
+2. **AI-Driven Segmentation:** Utilizes a nested U-Net++ topology with an EfficientNet-B3 encoder to perform semantic segmentation of flood regions from spectral satellite imagery.
+3. **Robust Fallback Engine:** If PyTorch model weights (`best_model.pth`) are not present, the backend dynamically falls back to an adaptive-thresholding contour analysis pipeline, ensuring 100% uptime.
+4. **Advanced Post-Processing (V2):**
+   - *Anti-Aliasing:* Gaussian smoothing to reduce grid aliasing.
+   - *Edge Refinement:* Optional DenseCRF (Conditional Random Field) boundary snapping.
+   - *Noise Clean-up:* Morphological opening (fine) and closing (coarse).
+   - *Clustering:* Connected-component filtering to exclude stray micro-blobs.
+   - *Refinement:* Hole filling and contour smoothing.
+5. **Multi-Scale Test-Time Augmentation (TTA):** Ensembles predictions from 4 geometric orientations (flips) to maximize boundary prediction robustness.
+6. **Automated Technical Advisory Reports:** Generates vector-graphic PDF briefs (including stats, risk ratings, overlays, and heatmaps) on the fly via ReportLab, ready for civic response dispatch.
 
-1. Install backend dependencies:
+---
 
-```bash
-cd backend
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+## 📂 Project Architecture
+
+```
+HydroTech-AI-Flood-Detection/
+├── backend/
+│   ├── main.py                  # FastAPI service (predict, report generation, health check)
+│   ├── requirements.txt         # CPU-optimized Python requirements for Render
+│   └── Dockerfile               # Slim Docker setup for cloud deployments
+├── frontend/
+│   ├── src/
+│   │   ├── components/          # 3D Earth, Dropzone, and UI widgets
+│   │   ├── pages/               # Landing and Dashboard layouts
+│   │   ├── store/               # Zustand global state manager
+│   │   └── styles/              # Global Tailwind CSS definitions
+│   ├── package.json             # React/Vite dependencies
+│   ├── vercel.json              # Client routing rewrites for SPA routing
+│   └── vite.config.ts           # Bundler and dev-server configuration
+└── scripts/                     # Helper utilities for validation
 ```
 
-2. Install frontend dependencies:
+---
 
-```bash
-cd frontend
-npm install
-```
+## 💻 Local Setup & Development
 
-3. Run the backend:
+### Backend (Python 3.10+)
 
-```bash
-cd backend
-.\.venv\Scripts\python.exe main.py
-```
+1. Navigate to the backend directory:
+   ```bash
+   cd backend
+   ```
+2. Create and activate a virtual environment:
+   ```bash
+   python -m venv .venv
+   # Windows:
+   .venv\Scripts\activate
+   # Linux/macOS:
+   source .venv/bin/activate
+   ```
+3. Install the packages (headless OpenCV for servers, and optional CPU-only PyTorch wheels for speed):
+   ```bash
+   pip install --upgrade pip
+   pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+   pip install -r requirements.txt
+   ```
+4. Start the development server:
+   ```bash
+   python main.py
+   ```
+   *The API will run on `http://127.0.0.1:8000`. Swagger docs are available at `http://127.0.0.1:8000/docs`.*
 
-4. Run the frontend:
+### Frontend (Node.js 20+)
 
-```bash
-cd frontend
-npm run dev
-```
+1. Navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
+2. Install the frontend dependencies (with legacy peer deps handling):
+   ```bash
+   npm install --legacy-peer-deps
+   ```
+3. Run the development server:
+   ```bash
+   npm run dev
+   ```
+   *The client will run on `http://localhost:3000`.*
 
-5. Open the app:
+---
 
-- Frontend: `http://localhost:3000`
-- Backend: `http://127.0.0.1:8000`
+## 🚀 Cloud Deployment
 
-## Deployment
+### Backend (Render)
+Deployed via a Docker container on Render to guarantee system-level OpenCV dependency mapping.
+- **Root Directory:** `backend`
+- **Runtime:** `Docker`
+- **Instance Type:** Free (512MB RAM)
+- **Model Weight Injection (Optional):** Define `MODEL_URL` as a Build Argument with a direct download link to HuggingFace or S3 to run the full U-Net++ model. If empty, the app runs the adaptive-threshold fallback.
 
-- Build frontend:
+### Frontend (Vercel)
+Static SPA deployment configured with Vite presets.
+- **Root Directory:** `frontend`
+- **Framework Preset:** Vite
+- **Install Command:** `npm install --legacy-peer-deps`
+- **Environment Variables:** `VITE_API_URL` set to the live Render Backend Web Service URL.
+- **Client Routing:** Handled via the rewrite rules in `frontend/vercel.json` redirecting all routes to `index.html`.
 
-```bash
-cd frontend
-npm run build
-npm start
-```
+---
 
-- Serve backend with uvicorn:
-
-```bash
-cd backend
-.\.venv\Scripts\uvicorn main:app --host 0.0.0.0 --port 8000
-```
-
-## Notes
-
-- Ensure `best_model.pth` is present in the repository root.
-- The frontend calls `http://127.0.0.1:8000/predict` and `http://127.0.0.1:8000/report`.
-- The app is designed as a high-end premium product with cinematic presentation and enterprise UI.
+## 📄 License
+This project is for analytical and educational research.
