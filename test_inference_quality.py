@@ -28,7 +28,7 @@ from main import clean_mask, clean_mask_v2, _run_tta_inference
 
 # ── Paths ────────────────────────────────────────────────────────────────────
 PROJECT = r"D:\FLOOD_DETECTION_PROJECT"
-MODEL_PATH = os.path.join(PROJECT, "best_model.pth")
+MODEL_PATH = os.path.join(PROJECT, "backend", "best_model.pth")
 VAL_IMG_DIR = os.path.join(PROJECT, "dataset", "val_images")
 OUT_DIR = os.path.join(PROJECT, "test_results", "quality_comparison")
 os.makedirs(OUT_DIR, exist_ok=True)
