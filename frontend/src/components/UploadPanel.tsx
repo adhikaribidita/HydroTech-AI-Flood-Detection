@@ -21,7 +21,7 @@ export default function UploadPanel(){
       const blob = await fetch(preview).then(r=>r.blob())
       const fd = new FormData()
       fd.append('file', new File([blob], 'upload.png', { type: 'image/png' }))
-      const res = await axios.post('http://127.0.0.1:8000/predict', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+      const res = await axios.post(`${import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000'}/predict`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
       setResult(res.data)
     }catch(e){
       console.error(e)

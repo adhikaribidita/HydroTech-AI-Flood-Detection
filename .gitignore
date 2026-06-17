@@ -21,11 +21,13 @@ cache/
 # Dataset
 dataset/
 
-# Model files
+# Model files — exclude large checkpoints except the production weights
 *.pth
 *.pt
 *.onnx
 saved_model/
+# Allow the production model needed for Render Docker build
+!backend/best_model.pth
 
 # Outputs
 outputs/
@@ -41,3 +43,8 @@ tempCodeRunnerFile.py
 # OS
 .DS_Store
 Thumbs.db
+
+# Environment variables (never commit real secrets)
+frontend/.env.local
+frontend/.env.*.local
+# .env and .env.production are tracked as templates (no real secrets)

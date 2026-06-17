@@ -51,7 +51,7 @@ export const useStore = create<AppState>((set) => ({
   history: [],
   settings: {
     threshold: 0.5,
-    apiUrl: 'http://127.0.0.1:8000',
+    apiUrl: import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000',
   },
   earthHovered: false,
   earthClicked: false,

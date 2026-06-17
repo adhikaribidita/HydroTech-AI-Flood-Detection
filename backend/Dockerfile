@@ -1,10 +1,11 @@
 FROM python:3.10-slim
 
-# Install system dependencies required for OpenCV
+# Install system dependencies required for OpenCV + wget for model download
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1-mesa-glx \
     libglib2.0-0 \
     build-essential \
+    wget \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -19,8 +20,16 @@ RUN pip install --no-cache-dir --upgrade pip && \
 
 # Copy backend application files
 COPY main.py .
-# Copy the trained weights file
-COPY best_model.pth /app/best_model.pth
+
+# Download model weights from HuggingFace Hub (URL injected via MODEL_URL build arg or env var)
+# If MODEL_URL is not set the app falls back to adaptive-threshold inference automatically.
+ARG MODEL_URL=""
+RUN if [ -n "$MODEL_URL" ]; then \
+      echo "Downloading model from $MODEL_URL" && \
+      wget -q -O /app/best_model.pth "$MODEL_URL"; \
+    else \
+      echo "MODEL_URL not set — skipping model download (fallback inference will be used)"; \
+    fi
 
 EXPOSE 8000
 
