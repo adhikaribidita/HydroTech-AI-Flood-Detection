@@ -252,12 +252,12 @@ class FloodDataset(Dataset):
 
 # UPDATED: larger batch + more workers for GPU
 train_loader = DataLoader(FloodDataset(X_train, Y_train, augment=True),
-                          batch_size=16, shuffle=True,
+                          batch_size=1, shuffle=True,
                           num_workers=0,       # ← change to 0 on Windows
                           pin_memory=True)
 
 val_loader   = DataLoader(FloodDataset(X_val, Y_val, augment=False),
-                          batch_size=16, shuffle=False,
+                          batch_size=1, shuffle=False,
                           num_workers=0,       # ← change to 0 on Windows
                           pin_memory=True)
 
@@ -288,13 +288,13 @@ print("GPU memory after dummy:", round(torch.cuda.memory_allocated() / 1e9, 3), 
 # [UPDATED] Mixed precision for faster GPU training
 # =====================================
 import torch.nn as nn
-from torch.optim import Adam
+from torch.optim import AdamW
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.amp import GradScaler, autocast
 import time
 
 EPOCHS   = 30
-LR       = 1e-3
+LR       = 1e-4
 PATIENCE = 5
 
 def dice_bce_loss(preds, targets, smooth=1e-6):
@@ -307,8 +307,8 @@ def dice_bce_loss(preds, targets, smooth=1e-6):
     return dice.mean() + bce
 
 criterion = dice_bce_loss
-optimizer = Adam(model.parameters(), lr=LR)
-scheduler = ReduceLROnPlateau(optimizer, mode="min", patience=3, factor=0.5)
+optimizer = AdamW(model.parameters(), lr=LR, weight_decay=1e-4)
+scheduler = ReduceLROnPlateau(optimizer, mode="min", patience=2, factor=0.5)
 
 scaler = GradScaler("cuda") if DEVICE.type == "cuda" else None
 

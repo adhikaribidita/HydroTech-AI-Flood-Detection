@@ -497,4 +497,4 @@ with gr.Blocks(title="HydroTech", head=custom_head) as demo:
 
 if __name__ == "__main__":
     print("Launching HydroTech...")
-    demo.launch(share=False, inbrowser=True, css=custom_css)
+    demo.launch(share=True, inbrowser=True, css=custom_css)
