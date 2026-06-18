@@ -1,6 +1,7 @@
 {
   "name": "hydrotech-frontend",
   "version": "0.1.0",
+  "homepage": "https://adhikaribidita.github.io/HydroTech-AI-Flood-Detection",
   "private": true,
   "engines": {
     "node": ">=20.0.0"

@@ -19,16 +19,13 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copy backend application files
-COPY main.py .
+COPY main.py best_model.pth ./
 
-# Download model weights from HuggingFace Hub (URL injected via MODEL_URL build arg or env var)
-# If MODEL_URL is not set the app falls back to adaptive-threshold inference automatically.
-ARG MODEL_URL=""
-RUN if [ -n "$MODEL_URL" ]; then \
-      echo "Downloading model from $MODEL_URL" && \
-      wget -q -O /app/best_model.pth "$MODEL_URL"; \
-    else \
-      echo "MODEL_URL not set — skipping model download (fallback inference will be used)"; \
+# If best_model.pth is just an LFS pointer (<1MB), download the actual weights using the raw GitHub URL
+RUN SIZE=$(stat -c%s best_model.pth) && \
+    if [ "$SIZE" -lt 1000000 ]; then \
+      echo "LFS pointer detected. Downloading raw model weights..." && \
+      wget -q -O best_model.pth "https://media.githubusercontent.com/media/adhikaribidita/HydroTech-AI-Flood-Detection/main/backend/best_model.pth"; \
     fi
 
 EXPOSE 8000
