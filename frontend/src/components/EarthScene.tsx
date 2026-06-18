@@ -299,12 +299,13 @@ function EarthMesh({ onClick }: Props) {
   const [shockwaves, setShockwaves] = useState<Shockwave[]>([])
 
   // Load high-resolution earth textures using ThreeJS texture loaders
+  const basePath = import.meta.env.BASE_URL
   const [colorMap, normalMap, specMap, cloudMap, lightsMap] = useTexture([
-    '/earthmap1k.jpg',
-    '/earth_normal_map.png',
-    '/earthspec1k.jpg',
-    '/earthcloudmap.jpg',
-    '/earth_lights_2048.png'
+    `${basePath}earthmap1k.jpg`,
+    `${basePath}earth_normal_map.png`,
+    `${basePath}earthspec1k.jpg`,
+    `${basePath}earthcloudmap.jpg`,
+    `${basePath}earth_lights_2048.png`
   ])
 
   // GSAP animation triggers for hover responses
@@ -649,7 +650,7 @@ function EarthFallback({ onClick }: Props) {
         <div className="absolute w-[340px] h-[340px] rounded-full border border-dashed border-cyan-500/10 animate-spin" style={{ animationDuration: '40s' }} />
         <div className="w-64 h-64 rounded-full border border-cyan-400/30 flex items-center justify-center overflow-hidden relative shadow-[0_0_40px_rgba(0,240,255,0.2)] group-hover:shadow-[0_0_60px_rgba(0,240,255,0.35)] transition-all duration-500 bg-black">
           <img 
-            src="/realistic_earth.png" 
+            src={`${import.meta.env.BASE_URL}realistic_earth.png`} 
             alt="Earth" 
             className="w-[110%] h-[110%] object-cover animate-[spin_30s_linear_infinite] group-hover:scale-110 transition-transform duration-700"
           />

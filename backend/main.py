@@ -97,7 +97,7 @@ def clean_mask_v2(
     prob_map: np.ndarray,
     image_bgr_256: np.ndarray | None = None,
     threshold: float = THRESHOLD,
-    use_crf: bool = True,
+    use_crf: bool = False,
 ) -> np.ndarray:
     """
     Convert a raw sigmoid probability map to a clean binary flood mask.
@@ -179,43 +179,12 @@ def clean_mask(prob_map: np.ndarray, threshold: float = THRESHOLD) -> np.ndarray
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# TEST-TIME AUGMENTATION (TTA)
-# Averages predictions from 4 orientations for more robust output.
+# SINGLE-PASS INFERENCE (TTA disabled for maximum speed)
 # ─────────────────────────────────────────────────────────────────────────────
-def _run_tta_inference(model, tensor: torch.Tensor) -> np.ndarray:
-    """
-    Run model at 4 geometric augmentations and average the probability maps.
-    Augmentations: original, horizontal flip, vertical flip, both flips.
-    Each prediction is un-flipped before averaging so maps align correctly.
-    """
-    preds: list[np.ndarray] = []
-
-    augments = [
-        {},
-        {"flip_h": True},
-        {"flip_v": True},
-        {"flip_h": True, "flip_v": True},
-    ]
-
-    for aug in augments:
-        t = tensor.clone()
-        if aug.get("flip_h"):
-            t = t.flip(3)   # flip width (W) dimension
-        if aug.get("flip_v"):
-            t = t.flip(2)   # flip height (H) dimension
-
-        with torch.inference_mode():
-            prob = torch.sigmoid(model(t)).squeeze().cpu().numpy()
-
-        # Undo flips on the output probability map to realign
-        if aug.get("flip_v"):
-            prob = np.flipud(prob)
-        if aug.get("flip_h"):
-            prob = np.fliplr(prob)
-
-        preds.append(prob.astype(np.float32))
-
-    return np.mean(preds, axis=0)
+def _run_single_inference(model, tensor: torch.Tensor) -> np.ndarray:
+    with torch.inference_mode():
+        prob = torch.sigmoid(model(tensor)).squeeze().cpu().numpy()
+    return prob.astype(np.float32)
 
 
 # Use cuda.device_count() > 0 (not just is_available()) to handle the case
@@ -561,8 +530,8 @@ def run_inference(image_bgr):
             torch.from_numpy(rgb).permute(2, 0, 1).unsqueeze(0).float().div(255.0).to(DEVICE)
         )
 
-        # ── TTA: average 4-orientation predictions ───────────────────────────
-        prob = _run_tta_inference(model, tensor)   # (256, 256) float32
+        # ── Single-pass inference (Fastest) ──────────────────────────────────
+        prob = _run_single_inference(model, tensor)   # (256, 256) float32
 
         # ── Multi-scale post-processing + optional CRF ───────────────────────
         clean = clean_mask_v2(
