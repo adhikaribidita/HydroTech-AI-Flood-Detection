@@ -8,6 +8,7 @@ import base64
 os.environ.setdefault("CUDA_VISIBLE_DEVICES", "")
 import numpy as np
 import torch
+torch.set_num_threads(1) # CRITICAL for Render free tier: prevents context-switch thrashing
 import cv2
 from PIL import Image
 from fastapi import FastAPI, File, UploadFile, HTTPException
