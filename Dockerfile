@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM python:3.10
 
 WORKDIR /app
 
@@ -10,8 +10,6 @@ RUN apt-get update && apt-get install -y \
 
 # Copy backend requirements first for caching
 COPY backend/requirements.txt .
-# Install CPU-only PyTorch first to prevent huge 2GB CUDA downloads and OOM crashes
-RUN pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu
 RUN pip install --no-cache-dir -r requirements.txt
 # Ensure reportlab is installed since it was added later
 RUN pip install --no-cache-dir reportlab
