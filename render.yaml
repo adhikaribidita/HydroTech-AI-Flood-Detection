@@ -1,14 +1,10 @@
 services:
   - type: web
-    name: hydrotech-backend
-    runtime: docker
-    dockerfilePath: ./backend/Dockerfile
-    dockerContext: ./backend
-    plan: free
+    name: hydrotech-ai-backend
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter # Free plan usually has 512MB RAM which might be tight for PyTorch, so 'starter' or 'standard' is recommended for ML models.
+    region: ohio
     envVars:
       - key: PORT
         value: 8000
-      - key: MODEL_URL
-        value: https://github.com/adhikaribidita/HydroTech-AI-Flood-Detection/releases/download/v1.0.1/best_model.pth
-      - key: EXTRA_CORS_ORIGINS
-        sync: false   # set this manually in Render dashboard after Vercel URL is known
