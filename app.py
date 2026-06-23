@@ -1,5 +1,4 @@
 import os
-os.environ.setdefault("CUDA_VISIBLE_DEVICES", "")
 import cv2
 import numpy as np
 import torch
@@ -23,8 +22,13 @@ MODEL_PATH = r"D:\FLOOD_DETECTION_PROJECT\best_model.pth"
 IMG_SIZE   = 256
 THRESHOLD  = 0.5
 
+# ImageNet normalisation (must match training)
+import torchvision.transforms.functional as TF
+IMG_MEAN = torch.tensor([0.485, 0.456, 0.406]).view(3, 1, 1)
+IMG_STD  = torch.tensor([0.229, 0.224, 0.225]).view(3, 1, 1)
+
 model = smp.UnetPlusPlus(
-    encoder_name    = "efficientnet-b3",
+    encoder_name    = "efficientnet-b4",   # matches trained model
     encoder_weights = None,
     in_channels     = 3,
     classes         = 1,
@@ -32,9 +36,15 @@ model = smp.UnetPlusPlus(
 ).to(DEVICE)
 
 if os.path.exists(MODEL_PATH):
-    model.load_state_dict(torch.load(MODEL_PATH, map_location='cpu'))
+    ckpt = torch.load(MODEL_PATH, map_location='cpu')
+    # Support both plain state-dict and checkpoint dicts
+    state = ckpt.get('model_state_dict', ckpt)
+    model.load_state_dict(state)
     model = model.to(DEVICE)
     model.eval()
+    print(f"[App] Model loaded from {MODEL_PATH}")
+else:
+    print(f"[App] WARNING: model not found at {MODEL_PATH}")
 
 # =====================================
 # POST-PROCESSING
@@ -104,8 +114,9 @@ def predict_flood(image_bgr):
     image_resized  = cv2.resize(image_bgr, (IMG_SIZE, IMG_SIZE))
     image_rgb      = cv2.cvtColor(image_resized, cv2.COLOR_BGR2RGB)
 
-    img_tensor = torch.from_numpy(image_rgb).permute(2, 0, 1).float().to(DEVICE)
-    img_tensor = img_tensor.unsqueeze(0).div(255.0)
+    img_tensor = torch.from_numpy(image_rgb).permute(2, 0, 1).float().div(255.0)
+    img_tensor = (img_tensor - IMG_MEAN) / IMG_STD   # ImageNet normalisation
+    img_tensor = img_tensor.unsqueeze(0).to(DEVICE)
 
     with torch.inference_mode():
         output   = model(img_tensor)
