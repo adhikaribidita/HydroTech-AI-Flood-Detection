@@ -10,7 +10,8 @@ export async function predictImage(file: File) {
 
     const response = await axios.post(`${API_URL}/predict`, formData, {
       headers: {
-        'Content-Type': 'multipart/form-data'
+        'Content-Type': 'multipart/form-data',
+        'Bypass-Tunnel-Reminder': 'true'
       }
     });
 
@@ -40,7 +41,11 @@ export async function predictImage(file: File) {
 
 export async function fetchReport(payload: any) {
   try {
-    const response = await axios.post(`${API_URL}/report`, payload);
+    const response = await axios.post(`${API_URL}/report`, payload, {
+      headers: {
+        'Bypass-Tunnel-Reminder': 'true'
+      }
+    });
     const data = response.data;
     
     // Decode base64 to Blob

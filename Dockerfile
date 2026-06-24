@@ -1,4 +1,4 @@
-FROM python:3.10
+FROM python:3.10-slim
 
 WORKDIR /app
 
@@ -6,6 +6,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     libgl1-mesa-glx \
     libglib2.0-0 \
+    wget \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy backend requirements first for caching
@@ -14,9 +15,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Ensure reportlab is installed since it was added later
 RUN pip install --no-cache-dir reportlab
 
-# Copy the backend code and the best model weights
+# Copy the backend code
 COPY backend/ ./backend/
-COPY best_model.pth .
+
+# Download the model weights directly to bypass Git LFS issues on Render
+RUN wget -qO best_model.pth https://github.com/adhikaribidita/HydroTech-AI-Flood-Detection/raw/main/best_model.pth || echo "Failed to download model"
 
 # Expose the standard port
 EXPOSE 8000
