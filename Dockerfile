@@ -18,8 +18,8 @@ RUN pip install --no-cache-dir reportlab
 # Copy the backend code
 COPY backend/ ./backend/
 
-# Download the model weights directly to bypass Git LFS issues on Render
-RUN wget -qO best_model.pth https://github.com/adhikaribidita/HydroTech-AI-Flood-Detection/raw/main/best_model.pth || echo "Failed to download model"
+# Copy the ONNX model
+COPY best_model.onnx .
 
 # Expose the standard port
 EXPOSE 8000

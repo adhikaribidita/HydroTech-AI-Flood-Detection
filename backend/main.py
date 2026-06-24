@@ -20,41 +20,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# =====================================
-# SYSTEM OPTIMIZATIONS
-# =====================================
-if torch.cuda.is_available():
-    torch.backends.cudnn.benchmark = True
-    DEVICE = torch.device("cuda")
-else:
-    DEVICE = torch.device("cpu")
+print("Loading ONNX model...")
+import onnxruntime as ort
 
-# Adjust MODEL_PATH to point to the root directory
-MODEL_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "best_model.pth")
+MODEL_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "best_model.onnx")
 IMG_SIZE   = 256
 THRESHOLD  = 0.5
 
-IMG_MEAN = torch.tensor([0.485, 0.456, 0.406]).view(3, 1, 1)
-IMG_STD  = torch.tensor([0.229, 0.224, 0.225]).view(3, 1, 1)
+IMG_MEAN = np.array([0.485, 0.456, 0.406]).reshape((3, 1, 1))
+IMG_STD  = np.array([0.229, 0.224, 0.225]).reshape((3, 1, 1))
 
-print("Loading model...")
-model = smp.UnetPlusPlus(
-    encoder_name    = "efficientnet-b4",
-    encoder_weights = None,
-    in_channels     = 3,
-    classes         = 1,
-    activation      = None
-).to(DEVICE)
-
-if os.path.exists(MODEL_PATH):
-    ckpt = torch.load(MODEL_PATH, map_location='cpu')
-    state = ckpt.get('model_state_dict', ckpt)
-    model.load_state_dict(state)
-    model = model.to(DEVICE)
-    model.eval()
+try:
+    ort_session = ort.InferenceSession(MODEL_PATH)
     print(f"[App] Model loaded from {MODEL_PATH}")
-else:
-    print(f"[App] WARNING: model not found at {MODEL_PATH}")
+except Exception as e:
+    print(f"[App] WARNING: model not found at {MODEL_PATH} or error: {e}")
+    ort_session = None
 
 def clean_mask(prob_map: np.ndarray, threshold: float = THRESHOLD) -> np.ndarray:
     h, w = prob_map.shape[:2]
@@ -85,20 +66,25 @@ def clean_mask(prob_map: np.ndarray, threshold: float = THRESHOLD) -> np.ndarray
     return filled
 
 def predict_flood(image_bgr):
-    if image_bgr is None:
+    if image_bgr is None or ort_session is None:
         return None, None, None, "Error", "0%"
 
     h_orig, w_orig = image_bgr.shape[:2]
     image_resized  = cv2.resize(image_bgr, (IMG_SIZE, IMG_SIZE))
     image_rgb      = cv2.cvtColor(image_resized, cv2.COLOR_BGR2RGB)
 
-    img_tensor = torch.from_numpy(image_rgb).permute(2, 0, 1).float().div(255.0)
-    img_tensor = (img_tensor - IMG_MEAN) / IMG_STD
-    img_tensor = img_tensor.unsqueeze(0).to(DEVICE)
+    # Preprocess
+    img_array = image_rgb.transpose((2, 0, 1)).astype(np.float32) / 255.0
+    img_array = (img_array - IMG_MEAN) / IMG_STD
+    img_tensor = np.expand_dims(img_array, axis=0)
 
-    with torch.inference_mode():
-        output   = model(img_tensor)
-        prob_map = torch.sigmoid(output).squeeze().cpu().numpy()
+    # Inference
+    outputs = ort_session.run(None, {'input': img_tensor})
+    output = outputs[0]
+    
+    # Sigmoid
+    prob_map = 1 / (1 + np.exp(-output))
+    prob_map = np.squeeze(prob_map)
 
     clean      = clean_mask(prob_map, THRESHOLD)
     pred_mask  = clean
@@ -127,6 +113,7 @@ def predict_flood(image_bgr):
     blended_out = cv2.resize(blended,    (w_orig, h_orig), interpolation=cv2.INTER_LINEAR)
 
     return mask_out, heatmap_out, blended_out, status, f"{flood_percent}%"
+
 
 @app.get("/")
 def read_root():
