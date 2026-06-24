@@ -1,0 +1,50 @@
+# Version control
+.git
+.gitignore
+
+# Python/Environment
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+.env
+
+# Node/Frontend
+node_modules/
+frontend/
+dist/
+.vercel/
+
+# Caches and Temporary Data
+cache/
+.gradio/
+dataset/
+outputs/
+output/
+plots/
+test_results/
+saved_model/
+__pycache__/
+.pytest_cache/
+
+# Large model files
+*.pth
+*.pt
+*.onnx
+!best_model.onnx
+
+# Logs and Temp files
+*.log
+*.tmp
+*.zip
+*.exe
+tempCodeRunnerFile.py
+tunnel.txt
+lt.js
+
+# Tunneling directories
+ngrok/
+ngrok2/
+ngrok3/
