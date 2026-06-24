@@ -1,10 +1,11 @@
 services:
   - type: web
     name: hydrotech-ai-backend
-    env: docker
-    dockerfilePath: ./Dockerfile
-    plan: starter # Free plan usually has 512MB RAM which might be tight for PyTorch, so 'starter' or 'standard' is recommended for ML models.
+    env: python
+    buildCommand: "pip install -r backend/requirements.txt"
+    startCommand: "uvicorn backend.main:app --host 0.0.0.0 --port $PORT"
+    plan: free
     region: ohio
     envVars:
-      - key: PORT
-        value: 8000
+      - key: PYTHON_VERSION
+        value: "3.10.12"
